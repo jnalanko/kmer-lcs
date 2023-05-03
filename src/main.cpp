@@ -3,9 +3,9 @@
 #include "sbwt/SBWT.hh"
 #include "sbwt/variants.hh"
 
-#include "build_lcs_basic_algorithm.hpp"
-#include "build_lcs_linear_algorithm.hpp"
-#include "build_lcs_superalphabet_algorithm.hpp"
+#include "lcs_basic_algorithm.hpp"
+#include "lcs_linear_algorithm.hpp"
+#include "lcs_superalphabet_algorithm.hpp"
 
 using namespace std;
 using namespace sbwt;
