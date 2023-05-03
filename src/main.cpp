@@ -30,11 +30,11 @@ int main(int argc, char** argv){
     cerr << "Loaded a plain matrix SBWT with " << sbwt.number_of_subsets() << " subsets" << endl;
 
     cerr << "Building LCS with basic algorithm" << endl;
-    sdsl::int_vector basic = build_lcs_basic_algorithm(sbwt);
+    sdsl::int_vector basic = lcs_basic_algorithm(sbwt);
     cerr << "Building LCS with superalphabet algorithm" << endl;
-    sdsl::int_vector superalphabet = build_lcs_superalphabet_algorithm(sbwt);
+    sdsl::int_vector superalphabet = lcs_superalphabet_algorithm(sbwt);
     cerr << "Building LCS with linear algorithm" << endl;
-    sdsl::int_vector linear = build_lcs_linear_algorithm(sbwt);
+    sdsl::int_vector linear = lcs_linear_algorithm(sbwt);
 
     if(basic != superalphabet) cerr << "wrong answer: basic != superalphabet" << endl;
     if(superalphabet != linear) cerr << "wrong answer: superalphabet != linear" << endl;

@@ -5,7 +5,7 @@
 
 using namespace std;
 
-sdsl::int_vector<> build_lcs_basic_algorithm(const sbwt::plain_matrix_sbwt_t& SBWT){
+sdsl::int_vector<> lcs_basic_algorithm(const sbwt::plain_matrix_sbwt_t& SBWT){
 
     const sdsl::bit_vector& A_bits = SBWT.get_subset_rank_structure().A_bits;
     const sdsl::bit_vector& C_bits = SBWT.get_subset_rank_structure().C_bits;
