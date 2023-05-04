@@ -3,6 +3,7 @@
 #include "sbwt/SBWT.hh"
 #include "sbwt/variants.hh"
 
+#include "lcs_naive_algorithm.hpp"
 #include "lcs_basic_algorithm.hpp"
 #include "lcs_linear_algorithm.hpp"
 #include "lcs_superalphabet_algorithm.hpp"
@@ -29,10 +30,12 @@ int main(int argc, char** argv){
     sbwt.load(in.stream);
     cerr << "Loaded a plain matrix SBWT with " << sbwt.number_of_subsets() << " subsets" << endl;
 
+    cerr << "Building LCS with naive algorithm" << endl;
+    sdsl::int_vector naive = lcs_naive_algorithm(sbwt);
     cerr << "Building LCS with basic algorithm" << endl;
     sdsl::int_vector basic = lcs_basic_algorithm(sbwt);
     cerr << "Building LCS with superalphabet algorithm" << endl;
-    sdsl::int_vector superalphabet = lcs_superalphabet_algorithm(sbwt);
+    sdsl::int_vector superalphabet = lcs_superalphabet_algorithm(sbwt,2);
     cerr << "Building LCS with linear algorithm" << endl;
     sdsl::int_vector linear = lcs_linear_algorithm(sbwt);
 

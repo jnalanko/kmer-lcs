@@ -2,7 +2,7 @@
 #include "sbwt/SBWT.hh"
 #include "sbwt/variants.hh"
 
-sdsl::int_vector<> lcs_superalphabet_algorithm(const sbwt::plain_matrix_sbwt_t& SBWT, int64_t chars_per_super_alpha_char){
+sdsl::int_vector<> lcs_naive_algorithm(const sbwt::plain_matrix_sbwt_t& SBWT){
     const sdsl::bit_vector& A_bits = SBWT.get_subset_rank_structure().A_bits;
     const sdsl::bit_vector& C_bits = SBWT.get_subset_rank_structure().C_bits;
     const sdsl::bit_vector& G_bits = SBWT.get_subset_rank_structure().G_bits;
