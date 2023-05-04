@@ -138,9 +138,9 @@ std::array<sdsl::bit_vector, 5> delete_dummies(const sbwt::plain_matrix_sbwt_t& 
 // Return a SBWT with the new k
 sbwt::plain_matrix_sbwt_t reduce_sbwt_order(const sbwt::plain_matrix_sbwt_t& SBWT, const sdsl::int_vector<>& LCS, int64_t new_k){
 
-    // This SBWT is functional, but can still have redundant dummies
     cerr << "Merging k-mers" << endl;
     sbwt::plain_matrix_sbwt_t merged_SBWT = merge_kmers(SBWT, LCS, new_k);
+    // This SBWT is functional, but can still have redundant dummies
 
     cerr << "Merged SBWT has " << merged_SBWT.number_of_subsets() << " subsets" << endl;
 
