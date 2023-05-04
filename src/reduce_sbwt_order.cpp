@@ -32,7 +32,10 @@ int main(int argc, char** argv){
     sbwt.load(in.stream);
     cerr << "Loaded a plain matrix SBWT with " << sbwt.number_of_subsets() << " subsets" << endl;
 
+    cerr << "Building the LCS" << endl;
     sdsl::int_vector lcs = lcs_basic_algorithm(sbwt);
+
+    cerr << "Reducing SBWT order" << endl;
     sbwt::plain_matrix_sbwt_t new_sbwt = reduce_sbwt_order(sbwt, lcs, new_k);
 
     cerr << "Reduced SBWT has " << new_sbwt.number_of_subsets() << " subsets" << endl;

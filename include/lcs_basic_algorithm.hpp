@@ -40,6 +40,7 @@ sdsl::int_vector<> lcs_basic_algorithm(const sbwt::plain_matrix_sbwt_t& SBWT){
     sdsl::int_vector<> lcs(n_nodes, 0, 64 - __builtin_clzll(k-1)); // Enough bits per element to store values from 0 to k-1
 
     for(int64_t round = 0; round < k; round++){
+        cerr << "Round " << round << "/" << k-1 << endl;
         for(int64_t i = 0; i < n_nodes; i++){
             if(mismatch_found_marks[i] == 0 && (i == 0 || last[i] != last[i-1])){
                 mismatch_found_marks[i] = 1;
