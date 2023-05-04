@@ -21,7 +21,6 @@ sbwt::plain_matrix_sbwt_t merge_kmers(const sbwt::plain_matrix_sbwt_t& SBWT, con
         &SBWT.get_subset_rank_structure().G_bits,
         &SBWT.get_subset_rank_structure().T_bits};
 
-    int64_t k = SBWT.get_k();
     int64_t n_nodes = SBWT.number_of_subsets();
     int64_t sigma = matrix.size();
     vector<char> alphabet;
@@ -33,21 +32,23 @@ sbwt::plain_matrix_sbwt_t merge_kmers(const sbwt::plain_matrix_sbwt_t& SBWT, con
     // Merge old k-mers having the same suffix of length equal to the new k
     cerr << "Merging k-mers..." << endl;
     for(int64_t i = 0; i < n_nodes; i++){
-        if(LCS[i] >= k){
+        if(LCS[i] >= new_k){
             // Add bits to the previous column
             for(char c : alphabet) 
                 new_matrix[c].back() = new_matrix[c].back() || (*matrix[c])[i];
         } else{
-            // Create new column
-            if(LCS[i] == k-1){
-                // Within the same suffix group as previous -> Add empty column
-                for(char c : alphabet) new_matrix[c].push_back(0);
-                new_suffix_group_starts.push_back(0);
-            } else{
-                // Copy the old column
-                for(char c : alphabet) new_matrix[c].push_back((*matrix[c])[i]);
-                new_suffix_group_starts.push_back(1);
-            }
+            
+            new_suffix_group_starts.push_back(LCS[i] < new_k-1);
+            
+            // Copy the old column
+            for(char c : alphabet) new_matrix[c].push_back((*matrix[c])[i]);
+        }
+    }
+
+    // Zero out columns that are not at the starts of suffix groups
+    for(int64_t i = 0; i < new_suffix_group_starts.size(); i++){
+        if(new_suffix_group_starts[i] == 0){
+            for(char c : alphabet) new_matrix[c][i] = 0;
         }
     }
 
@@ -58,7 +59,7 @@ sbwt::plain_matrix_sbwt_t merge_kmers(const sbwt::plain_matrix_sbwt_t& SBWT, con
         to_sdsl(new_matrix[2]),
         to_sdsl(new_matrix[3]),
         to_sdsl(new_suffix_group_starts),
-        k, 0, 0); // number of k-mers is set to 0 because we don't know it, but that does not matter
+        new_k, 0, 0); // number of k-mers is set to 0 because we don't know it, but that does not matter
 
 }
 
@@ -100,7 +101,7 @@ sbwt::plain_matrix_sbwt_t reduce_sbwt_order(const sbwt::plain_matrix_sbwt_t& SBW
     sbwt::plain_matrix_sbwt_t merged_SBWT = merge_kmers(SBWT, LCS, new_k);
 
     cerr << "Marking dummy nodes for deletion..." << endl;
-    sdsl::bit_vector delete_marks = mark_dummies_for_deletion(SBWT);
+    sdsl::bit_vector delete_marks = mark_dummies_for_deletion(merged_SBWT);
 
     cerr << "Building the final SBWT" << endl;
     int64_t n = 0;
