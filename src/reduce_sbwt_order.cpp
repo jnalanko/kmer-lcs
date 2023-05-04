@@ -21,6 +21,7 @@ int main(int argc, char** argv){
     int64_t new_k = stoll(argv[3]);
 
     sbwt::throwing_ifstream in(sbwt_index_file, ios::binary);
+    sbwt::throwing_ofstream out(out_file, ios::binary);
     string variant = load_string(in.stream); // read variant type
     if(variant != "plain-matrix"){
         cerr << "Error: input is not a plain-matrix SBWT" << endl;
@@ -36,6 +37,7 @@ int main(int argc, char** argv){
 
     cerr << "Reduced SBWT has " << new_sbwt.number_of_subsets() << " subsets" << endl;
 
-    new_sbwt.serialize(out_file);
+    serialize_string("plain-matrix", out.stream);
+    new_sbwt.serialize(out.stream);
 
 }
