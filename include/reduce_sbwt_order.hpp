@@ -34,7 +34,7 @@ sbwt::plain_matrix_sbwt_t merge_kmers(const sbwt::plain_matrix_sbwt_t& SBWT, con
     for(int64_t i = 0; i < n_nodes; i++){
         if(LCS[i] >= new_k){
             // Add bits to the previous column
-            for(char c : alphabet) 
+            for(char c : alphabet)
                 new_matrix[c].back() = new_matrix[c].back() || (*matrix[c])[i];
         } else{
             
@@ -70,9 +70,9 @@ sdsl::bit_vector mark_dummies_for_deletion(const sbwt::plain_matrix_sbwt_t& SBWT
     string ACGT = "ACGT";
     std::function<bool(int64_t, int64_t)> dfs = [&](int64_t v, int64_t depth){
         if(depth == SBWT.get_k()){
-            // Since we came from a dummy node, we are at the start of a suffix group.
-            // Return whether this suffix group has more than one member.
-            return v < SBWT.number_of_subsets()-1 && SBWT.get_streaming_support()[v+1] == 0;
+            // Return true iff the suffix group of v has size greater than 1
+            const sdsl::bit_vector& ss = SBWT.get_streaming_support();
+            return ss[v] == 0 || (v < SBWT.number_of_subsets()-1 && ss[v+1] == 0);
         } else{ // Push children
             bool all_children_deleted = true;
             for(char c : ACGT){
