@@ -29,7 +29,7 @@ sdsl::int_vector<> lcs_linear_algorithm(const sbwt::plain_matrix_sbwt_t& SBWT){
 
     vector<pair<uint64_t, uint64_t>> _I = {{0,0}}; // $ interval
     for(int64_t i = 0; i < k; i++) {
-        cerr << "Round " << i << "/" << k-1 << endl;
+        cerr << "Round " << i << "/" << k-1 << ", intervals: " << I.size() << endl;
         while (!I.empty()){
             pair<uint64_t, uint64_t> l_r = I.back();
             I.pop_back();
