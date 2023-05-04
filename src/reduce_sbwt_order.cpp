@@ -4,6 +4,7 @@
 #include "sbwt/variants.hh"
 
 #include "lcs_basic_algorithm.hpp"
+#include "lcs_linear_algorithm.hpp"
 #include "reduce_sbwt_order.hpp"
 
 using namespace std;
@@ -33,7 +34,7 @@ int main(int argc, char** argv){
     cerr << "Loaded a plain matrix SBWT with " << sbwt.number_of_subsets() << " subsets" << endl;
 
     cerr << "Building the LCS" << endl;
-    sdsl::int_vector lcs = lcs_basic_algorithm(sbwt);
+    sdsl::int_vector lcs = lcs_linear_algorithm(sbwt);
 
     cerr << "Reducing SBWT order" << endl;
     sbwt::plain_matrix_sbwt_t new_sbwt = reduce_sbwt_order(sbwt, lcs, new_k);
