@@ -30,7 +30,6 @@ sbwt::plain_matrix_sbwt_t merge_kmers(const sbwt::plain_matrix_sbwt_t& SBWT, con
     vector<bool> new_suffix_group_starts;
 
     // Merge old k-mers having the same suffix of length equal to the new k
-    cerr << "Merging k-mers..." << endl;
     for(int64_t i = 0; i < n_nodes; i++){
         if(LCS[i] >= new_k){
             // Add bits to the previous column
@@ -46,10 +45,14 @@ sbwt::plain_matrix_sbwt_t merge_kmers(const sbwt::plain_matrix_sbwt_t& SBWT, con
     }
 
     // Zero out columns that are not at the starts of suffix groups
+    int64_t prev_suffix_group_start = 0;
     for(int64_t i = 0; i < new_suffix_group_starts.size(); i++){
         if(new_suffix_group_starts[i] == 0){
-            for(char c : alphabet) new_matrix[c][i] = 0;
-        }
+            for(char c : alphabet){
+                new_matrix[c][prev_suffix_group_start] = new_matrix[c][prev_suffix_group_start] | new_matrix[c][i];
+                new_matrix[c][i] = 0;
+            }
+        } else prev_suffix_group_start = i;
     }
 
     // This SBWT is functional, but can still have redundant dummies
@@ -69,10 +72,12 @@ sdsl::bit_vector mark_dummies_for_deletion(const sbwt::plain_matrix_sbwt_t& SBWT
 
     string ACGT = "ACGT";
     std::function<bool(int64_t, int64_t)> dfs = [&](int64_t v, int64_t depth){
-        if(depth == SBWT.get_k()){
+        if(depth == SBWT.get_k()-1){ // Recursion base case
             // Return true iff the suffix group of v has size greater than 1
             const sdsl::bit_vector& ss = SBWT.get_streaming_support();
-            return ss[v] == 0 || (v < SBWT.number_of_subsets()-1 && ss[v+1] == 0);
+            bool to_delete = v < SBWT.number_of_subsets()-1 && ss[v+1] == 0;
+            if(to_delete) delete_marks[v] = 1;
+            return to_delete;
         } else{ // Push children
             bool all_children_deleted = true;
             for(char c : ACGT){
@@ -80,11 +85,13 @@ sdsl::bit_vector mark_dummies_for_deletion(const sbwt::plain_matrix_sbwt_t& SBWT
                 if(u != -1){
                     bool to_delete = dfs(u, depth+1);
                     all_children_deleted &= to_delete;
-                    if(v > 0 && all_children_deleted){ // v == 0: root is never deleted
-                        delete_marks[v] = 1; 
-                    }
                 }
             }
+
+            if(v > 0 && all_children_deleted){ // v == 0: root is never deleted
+                delete_marks[v] = 1; 
+            }
+            
             return all_children_deleted;
         }
     };
@@ -99,6 +106,8 @@ sbwt::plain_matrix_sbwt_t reduce_sbwt_order(const sbwt::plain_matrix_sbwt_t& SBW
     // This SBWT is functional, but can still have redundant dummies
     cerr << "Merging k-mers" << endl;
     sbwt::plain_matrix_sbwt_t merged_SBWT = merge_kmers(SBWT, LCS, new_k);
+
+    cerr << "Merged SBWT has " << merged_SBWT.number_of_subsets() << " subsets" << endl;
 
     cerr << "Marking dummy nodes for deletion..." << endl;
     sdsl::bit_vector delete_marks = mark_dummies_for_deletion(merged_SBWT);
