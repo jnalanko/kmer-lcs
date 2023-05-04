@@ -3,8 +3,12 @@
 ```
 git submodule update --init --recursive
 cd SBWT/build
-cmake ..
+
+# Here we are compiling with gcc-10 and g++-10. Replace these with whatever
+# version of g++ you have. Clang will not work.
+cmake .. -DCMAKE_C_COMPILER=$(which gcc-10) -DCMAKE_CXX_COMPILER=$(which g++-10)
 make -j4
+
 cd ../..
 make main --always-make
 ```
