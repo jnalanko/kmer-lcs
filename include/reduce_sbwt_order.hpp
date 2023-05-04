@@ -94,6 +94,39 @@ sdsl::bit_vector mark_dummies_for_deletion(const sbwt::plain_matrix_sbwt_t& SBWT
     return delete_marks;
 }
 
+// This is a supporting function for reduce_sbwt_order
+// Return rearranged bits of the four sbwt bit vectors and the streaming support vector
+std::array<sdsl::bit_vector, 5> redistribute_bits(const sbwt::plain_matrix_sbwt_t& SBWT, const sdsl::bit_vector& delete_marks){
+    int64_t n = 0;
+    for(bool b : delete_marks) n += (1-b);
+
+    sdsl::bit_vector A(n, 0), C(n, 0), G(n, 0), T(n, 0), ss(n, 0);
+    for(int64_t i = 0, j = 0; i < delete_marks.size(); i++){
+        if(delete_marks[i]){
+            if(i < delete_marks.size()-1 && SBWT.get_streaming_support()[i+1] == 0){
+                // This is a dummy node of length k-1. Since we are deleting this,
+                // we need to move the outgoing edges from here to the next member of
+                // this suffix group, or otherwise the destinations of the edges would
+                // be left without any incoming edges. The next node is the new start
+                // of the suffix group
+                A[j] = A[j] || SBWT.get_subset_rank_structure().A_bits[i];
+                C[j] = C[j] || SBWT.get_subset_rank_structure().C_bits[i];
+                G[j] = G[j] || SBWT.get_subset_rank_structure().G_bits[i];
+                T[j] = T[j] || SBWT.get_subset_rank_structure().T_bits[i];
+                ss[j] = ss[j] || SBWT.get_streaming_support()[i];
+            }
+        } else{
+            A[j] = A[j] || SBWT.get_subset_rank_structure().A_bits[i];
+            C[j] = C[j] || SBWT.get_subset_rank_structure().C_bits[i];
+            G[j] = G[j] || SBWT.get_subset_rank_structure().G_bits[i];
+            T[j] = T[j] || SBWT.get_subset_rank_structure().T_bits[i];
+            ss[j] = ss[j] || SBWT.get_streaming_support()[i];
+            j++;
+        }
+    }
+    return {A,C,G,T,ss};
+}
+
 // Return a SBWT with the new k
 sbwt::plain_matrix_sbwt_t reduce_sbwt_order(const sbwt::plain_matrix_sbwt_t& SBWT, const sdsl::int_vector<>& LCS, int64_t new_k){
 
@@ -107,20 +140,8 @@ sbwt::plain_matrix_sbwt_t reduce_sbwt_order(const sbwt::plain_matrix_sbwt_t& SBW
     sdsl::bit_vector delete_marks = mark_dummies_for_deletion(merged_SBWT);
 
     cerr << "Building the final SBWT" << endl;
-    int64_t n = 0;
-    for(bool b : delete_marks) n += (1-b);
 
-    sdsl::bit_vector final_A(n), final_C(n), final_G(n), final_T(n), final_suffix_groups(n);
-    for(int64_t i = 0, j = 0; i < merged_SBWT.number_of_subsets(); i++){
-        if(!delete_marks[i]){
-            final_A[j] = merged_SBWT.get_subset_rank_structure().A_bits[i];
-            final_C[j] = merged_SBWT.get_subset_rank_structure().C_bits[i];
-            final_G[j] = merged_SBWT.get_subset_rank_structure().G_bits[i];
-            final_T[j] = merged_SBWT.get_subset_rank_structure().T_bits[i];
-            final_suffix_groups[j] = merged_SBWT.get_streaming_support()[i];
-            j++;
-        }
-    }
+    auto [final_A, final_C, final_G, final_T, final_suffix_groups] = redistribute_bits(merged_SBWT, delete_marks);
 
     return sbwt::plain_matrix_sbwt_t(
         final_A, final_C, final_G, final_T, 
