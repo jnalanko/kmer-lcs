@@ -75,23 +75,17 @@ sdsl::bit_vector mark_dummies_for_deletion(const sbwt::plain_matrix_sbwt_t& SBWT
         if(depth == SBWT.get_k()-1){ // Recursion base case
             // Return true iff the suffix group of v has size greater than 1
             const sdsl::bit_vector& ss = SBWT.get_streaming_support();
-            bool to_delete = v < SBWT.number_of_subsets()-1 && ss[v+1] == 0;
-            if(to_delete) delete_marks[v] = 1;
-            return to_delete;
+            return v < SBWT.number_of_subsets()-1 && ss[v+1] == 0;
         } else{ // Push children
             bool all_children_deleted = true;
             for(char c : ACGT){
                 int64_t u = SBWT.forward(v, c);
                 if(u != -1){
                     bool to_delete = dfs(u, depth+1);
+                    if(to_delete) delete_marks[u] = 1;
                     all_children_deleted &= to_delete;
                 }
-            }
-
-            if(v > 0 && all_children_deleted){ // v == 0: root is never deleted
-                delete_marks[v] = 1; 
-            }
-            
+            }            
             return all_children_deleted;
         }
     };
