@@ -3,10 +3,8 @@
 #include "sbwt/SBWT.hh"
 #include "sbwt/variants.hh"
 
-#include "lcs_naive_algorithm.hpp"
 #include "lcs_basic_algorithm.hpp"
-#include "lcs_linear_algorithm.hpp"
-#include "lcs_superalphabet_algorithm.hpp"
+#include "reduce_sbwt_order.hpp"
 
 using namespace std;
 using namespace sbwt;
@@ -19,6 +17,8 @@ int main(int argc, char** argv){
     }
 
     string sbwt_index_file = string(argv[1]);
+    string out_file = string(argv[2]);
+    int64_t new_k = stoll(argv[3]);
 
     sbwt::throwing_ifstream in(sbwt_index_file, ios::binary);
     string variant = load_string(in.stream); // read variant type
@@ -31,16 +31,11 @@ int main(int argc, char** argv){
     sbwt.load(in.stream);
     cerr << "Loaded a plain matrix SBWT with " << sbwt.number_of_subsets() << " subsets" << endl;
 
-    cerr << "Building LCS with naive algorithm" << endl;
-    sdsl::int_vector naive = lcs_naive_algorithm(sbwt);
-    cerr << "Building LCS with basic algorithm" << endl;
-    sdsl::int_vector basic = lcs_basic_algorithm(sbwt);
-    cerr << "Building LCS with superalphabet algorithm" << endl;
-    sdsl::int_vector superalphabet = lcs_superalphabet_algorithm(sbwt,2);
-    cerr << "Building LCS with linear algorithm" << endl;
-    sdsl::int_vector linear = lcs_linear_algorithm(sbwt);
+    sdsl::int_vector lcs = lcs_basic_algorithm(sbwt);
+    sbwt::plain_matrix_sbwt_t new_sbwt = reduce_sbwt_order(sbwt, lcs, new_k);
 
-    if(basic != superalphabet) cerr << "wrong answer: basic != superalphabet" << endl;
-    if(superalphabet != linear) cerr << "wrong answer: superalphabet != linear" << endl;
+    cerr << "Reduced SBWT has " << new_sbwt.number_of_subsets() << " subsets" << endl;
+
+    new_sbwt.serialize(out_file);
 
 }
