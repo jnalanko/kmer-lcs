@@ -21,9 +21,8 @@ sdsl::int_vector<> lcs_linear_algorithm(const sbwt::plain_matrix_sbwt_t& SBWT){
     const vector<int64_t>& C = SBWT.get_C_array();
     const int sigma = C.size();
 
-    sdsl::bit_vector modif(n_nodes, 0);
-    sdsl::int_vector<> lcs(n_nodes, 0, 64 - __builtin_clzll(k)); // Enough bits per element to store values from 0 to k-1
-
+    sdsl::int_vector<> lcs(n_nodes, k, 64 - __builtin_clzll(k)); // Enough bits per element to store values from 0 to k
+    lcs[0]=lcs[1]=0;
     vector<pair<uint64_t, uint64_t>> I;
     I.push_back({0,n_nodes});
 
@@ -42,9 +41,8 @@ sdsl::int_vector<> lcs_linear_algorithm(const sbwt::plain_matrix_sbwt_t& SBWT){
                 int64_t l = C[c] + Bit_rs.rank(l_r.first);
                 int64_t r = C[c] + Bit_rs.rank(l_r.second + 1) -1;
                 int64_t rank = r - l ;
-                if (rank >= 0 && r < n_nodes-1 && !modif[r+1]){//lcs[r+1] == k){
+                if (rank >= 0 && r < n_nodes-1 && lcs[r+1] == k){
                     lcs[r+1] = i;
-                    modif[r+1] = 1;
                     _I.push_back({ l, r });
                 }
                 else if (rank >= 0 && r == n_nodes -1){ // *T intervals
