@@ -37,18 +37,20 @@ sdsl::int_vector<> run_with_timing(const sbwt::plain_matrix_sbwt_t& sbwt, std::f
 int main(int argc, char** argv){
 
     if(argc == 1){
-        cerr << "Please give a plain-matrix sbwt file and the name of an output file" << endl;
-        cerr << "Usage: " << argv[0] << " <sbwt-file> <output-file>" << endl;
-        cerr << "The output file will be a CSV file with two columns: algorithm name and running time in seconds" << endl;
-        cerr << "The output file will be overwritten if it already exists" << endl;
+        cerr << "Usage: " << argv[0] << " <sbwt-file> <algorithm> <output-file>" << endl;
+        cerr << "The sbwt file must be in plain-matrix format." << endl;
+        cerr << "The algorithm is one of: naive, basic, superalphabet-x, linear," << endl;
+        cerr << "where the x in superalphabet-x is a number specifying the number of characters in each supercharacter" << endl;
+        cerr << "Appends one line to the output file containing the result," << endl;
         return 1;
     }
 
     string sbwt_index_file = string(argv[1]);
-    string outfile = string(argv[2]);
+    string algorithm = string(argv[2]);
+    string outfile = string(argv[3]);
 
     sbwt::throwing_ifstream in(sbwt_index_file, ios::binary);
-    sbwt::throwing_ofstream out(outfile);
+    sbwt::throwing_ofstream out(outfile, ios::app); // Append mode
     string variant = load_string(in.stream); // read variant type
     if(variant != "plain-matrix"){
         cerr << "Error: input is not a plain-matrix SBWT" << endl;
@@ -59,23 +61,20 @@ int main(int argc, char** argv){
     sbwt.load(in.stream);
     cerr << "Loaded a plain matrix SBWT with " << sbwt.number_of_subsets() << " subsets" << endl;
 
-    auto superalphabet_algorithm_2 = [](const sbwt::plain_matrix_sbwt_t& sbwt){
-        return lcs_superalphabet_algorithm(sbwt, 2);
-    };
-
-    auto superalphabet_algorithm_4 = [](const sbwt::plain_matrix_sbwt_t& sbwt){
-        return lcs_superalphabet_algorithm(sbwt, 4);
-    };
-
-    sdsl::int_vector naive = run_with_timing(sbwt, lcs_naive_algorithm, "Naive", out.stream);
-    sdsl::int_vector basic = run_with_timing(sbwt, lcs_basic_algorithm, "Basic", out.stream);
-    sdsl::int_vector superalphabet_2 = run_with_timing(sbwt, superalphabet_algorithm_2, "Superalphabet-2", out.stream);
-    sdsl::int_vector superalphabet_4 = run_with_timing(sbwt, superalphabet_algorithm_4, "Superalphabet-4", out.stream);
-    sdsl::int_vector linear = run_with_timing(sbwt, lcs_linear_algorithm, "Linear", out.stream);
-
-    if(naive != basic) cerr << "Naive and basic algorithms do not agree" << endl;
-    if(naive != superalphabet_2) cerr << "Naive and superalphabet-2 algorithms do not agree" << endl;
-    if(naive != superalphabet_4) cerr << "Naive and superalphabet-4 algorithms do not agree" << endl;
-    if(naive != linear) cerr << "Naive and linear algorithms do not agree" << endl;
-
+    if(algorithm == "naive"){
+        run_with_timing(sbwt, lcs_naive_algorithm, "Naive", out.stream);
+    } else if(algorithm == "basic"){
+        run_with_timing(sbwt, lcs_basic_algorithm, "Basic", out.stream);
+    } else if(algorithm == "linear"){
+        run_with_timing(sbwt, lcs_linear_algorithm, "Linear", out.stream);
+    } else if(algorithm.substr(0, 14) == "superalphabet-"){
+        int64_t superalphabet_size = stoll(algorithm.substr(14));
+        auto superalphabet_algorithm = [superalphabet_size](const sbwt::plain_matrix_sbwt_t& sbwt){
+            return lcs_superalphabet_algorithm(sbwt, superalphabet_size);
+        };
+        run_with_timing(sbwt, superalphabet_algorithm, "Superalphabet-" + to_string(superalphabet_size), out.stream);
+    } else {
+        cerr << "Error: unknown algorithm " << algorithm << endl;
+        return 1;
+    }
 }
