@@ -13,12 +13,15 @@
 using namespace std;
 using namespace sbwt;
 
+
 int64_t get_microseconds(){
+    // Get the current time in microseconds
     auto start = chrono::high_resolution_clock::now();
     int64_t microseconds = chrono::duration_cast<chrono::microseconds>(start.time_since_epoch()).count();
     return microseconds;
 }
 
+// Run an algorithm and print the time it took to run
 sdsl::int_vector<> run_with_timing(const sbwt::plain_matrix_sbwt_t& sbwt, std::function<sdsl::int_vector<>(const sbwt::plain_matrix_sbwt_t&)> f, const string& algorithm_name, ostream& out){
     
     cerr << "Running " << algorithm_name << endl;
@@ -35,6 +38,9 @@ int main(int argc, char** argv){
 
     if(argc == 1){
         cerr << "Please give a plain-matrix sbwt file and the name of an output file" << endl;
+        cerr << "Usage: " << argv[0] << " <sbwt-file> <output-file>" << endl;
+        cerr << "The output file will be a CSV file with two columns: algorithm name and running time in seconds" << endl;
+        cerr << "The output file will be overwritten if it already exists" << endl;
         return 1;
     }
 
