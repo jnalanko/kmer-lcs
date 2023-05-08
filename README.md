@@ -24,5 +24,7 @@ The code takes a plain-matrix sbwt file as input. You can generate one by runnin
 Then, you can run the benchmark with:
 
 ```
-./benchmark index.sbwt out.txt
+./benchmark index.sbwt linear out.txt
 ```
+
+where linear is one of: naive, basic, superalphabet-2, superalphabet-4, linear.
