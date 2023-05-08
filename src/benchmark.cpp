@@ -31,7 +31,7 @@ sdsl::int_vector<> run_with_timing(const sbwt::plain_matrix_sbwt_t& sbwt, std::f
     sdsl::int_vector<> lcs = f(sbwt);
     int64_t end = get_microseconds();
 
-    out << algorithm_name << "," << (end-start) / 1e6 << "," << getPeakRSS() / (double)(1<<20) << "," << sbwt.get_k() << "," << sbwt.number_of_subsets() << "," << sbwt.number_of_kmers() << endl;
+    out << algorithm_name << "," << (end-start) / 1e6 << "," << getPeakRSS() / (double)(1<<20) << "," << sbwt.get_k() << "," << sbwt.number_of_subsets() << endl;
     return lcs;
 }
 
