@@ -43,7 +43,7 @@ int main(int argc, char** argv){
     }
 
     cerr << "Building the LCS" << endl;
-    sdsl::int_vector lcs = lcs_basic_algorithm(sbwt);
+    sdsl::int_vector lcs = lcs_linear_algorithm(sbwt);
 
     for(int64_t k : new_k_values){
         cerr << "Reducing to order " << k << endl;
