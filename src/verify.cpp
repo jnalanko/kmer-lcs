@@ -57,7 +57,7 @@ int main(int argc, char** argv){
 
     sdsl::int_vector naive = lcs_naive_algorithm(sbwt);
     sdsl::int_vector basic = lcs_basic_algorithm(sbwt);
-    sdsl::int_vector basic_parallel = lcs_basic_parallel_algorithm(sbwt);
+    sdsl::int_vector basic_parallel = lcs_basic_parallel_algorithm(sbwt, 8);
     sdsl::int_vector superalphabet_2 = lcs_superalphabet_algorithm(sbwt, 2);
     sdsl::int_vector superalphabet_4 = lcs_superalphabet_algorithm(sbwt, 4);
     sdsl::int_vector linear = lcs_linear_algorithm(sbwt);

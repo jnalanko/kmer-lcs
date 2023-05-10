@@ -17,7 +17,7 @@ void lcs_worker_thread(char** output_starts, const char* input, const sdsl::bit_
     }
 }
 
-sdsl::int_vector<> lcs_basic_parallel_algorithm(const sbwt::plain_matrix_sbwt_t& SBWT){
+sdsl::int_vector<> lcs_basic_parallel_algorithm(const sbwt::plain_matrix_sbwt_t& SBWT, int64_t n_threads){
 
     const sdsl::bit_vector& A_bits = SBWT.get_subset_rank_structure().A_bits;
     const sdsl::bit_vector& C_bits = SBWT.get_subset_rank_structure().C_bits;
@@ -62,13 +62,20 @@ sdsl::int_vector<> lcs_basic_parallel_algorithm(const sbwt::plain_matrix_sbwt_t&
 
         // Propagate the labels one step forward in the graph
         vector<char> propagated(n_nodes, '$');
-        char* A_ptr = propagated.data() + C_array[0];
-        char* C_ptr = propagated.data() + C_array[1];
-        char* G_ptr = propagated.data() + C_array[2];
-        char* T_ptr = propagated.data() + C_array[3];
-        char* ptrs[4] = {A_ptr, C_ptr, G_ptr, T_ptr};
-        const sdsl::bit_vector* bits[4] = {&A_bits, &C_bits, &G_bits, &T_bits};
-        lcs_worker_thread(ptrs, last.data(), bits, 0, n_nodes);
+
+        #pragma omp parallel for num_threads(n_threads)
+        for(int64_t t = 0; t < n_threads; t++){
+            int64_t start = n_nodes * t / n_threads;
+            int64_t end = n_nodes * (t+1) / n_threads;
+            char* A_ptr = propagated.data() + C_array[0] + SBWT.get_subset_rank_structure().A_bits_rs(start);
+            char* C_ptr = propagated.data() + C_array[1] + SBWT.get_subset_rank_structure().C_bits_rs(start);
+            char* G_ptr = propagated.data() + C_array[2] + SBWT.get_subset_rank_structure().G_bits_rs(start);
+            char* T_ptr = propagated.data() + C_array[3] + SBWT.get_subset_rank_structure().T_bits_rs(start);
+            char* ptrs[4] = {A_ptr, C_ptr, G_ptr, T_ptr};
+            const sdsl::bit_vector* bits[4] = {&A_bits, &C_bits, &G_bits, &T_bits};
+            lcs_worker_thread(ptrs, last.data(), bits, start, end);
+        }
+        
         last = propagated;
     }
 
