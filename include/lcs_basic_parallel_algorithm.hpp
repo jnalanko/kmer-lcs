@@ -75,7 +75,7 @@ sdsl::int_vector<> lcs_basic_parallel_algorithm(const sbwt::plain_matrix_sbwt_t&
             const sdsl::bit_vector* bits[4] = {&A_bits, &C_bits, &G_bits, &T_bits};
             lcs_worker_thread(ptrs, last.data(), bits, start, end);
         }
-        
+
         last = propagated;
     }
 
