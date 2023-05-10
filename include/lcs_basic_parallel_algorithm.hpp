@@ -17,6 +17,29 @@ void lcs_worker_thread(char** output_starts, const char* input, const sdsl::bit_
     }
 }
 
+void populate_first_column(char* column, vector<int64_t> C_array, const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits){
+
+    
+    int64_t n_nodes = A_bits.size();
+    C_array.push_back(n_nodes);
+
+    column[0] = '$';
+
+    int64_t last_idx = 1;
+
+    string ACGT = "ACGT";
+    for(char sigma = 0; sigma < 4; sigma++){
+        for(int64_t i = 0; i < C_array[sigma+1] - C_array[sigma]; i++){
+            column[last_idx++] = ACGT[sigma];
+        }
+    }   
+
+    if(last_idx != n_nodes){
+        cerr << "BUG " << last_idx << " " << n_nodes << endl;
+        exit(1);
+    }
+}
+
 sdsl::int_vector<> lcs_basic_parallel_algorithm(const sbwt::plain_matrix_sbwt_t& SBWT, int64_t n_threads){
 
     if(SBWT.get_k() > 255){
@@ -31,27 +54,15 @@ sdsl::int_vector<> lcs_basic_parallel_algorithm(const sbwt::plain_matrix_sbwt_t&
     int64_t k = SBWT.get_k();
     int64_t n_nodes = SBWT.number_of_subsets();
 
-    vector<int64_t> C_array(4);
+    vector<int64_t> C_array = SBWT.get_C_array();
 
-    vector<char> last; // last[i] = incoming character to node i
-    last.push_back('$');
-
-    C_array[0] = last.size();
-    for(int64_t i = 0; i < n_nodes; i++) if(A_bits[i]) last.push_back('A');
-
-    C_array[1] = last.size();
-    for(int64_t i = 0; i < n_nodes; i++) if(C_bits[i]) last.push_back('C');
-
-    C_array[2] = last.size();
-    for(int64_t i = 0; i < n_nodes; i++) if(G_bits[i]) last.push_back('G');
+    // We need to keep two columns in memory at the same time, so we create
+    // two buffers and alternate which one is being written to
+    char* buf1 = new char[n_nodes]; 
+    char* buf2 = new char[n_nodes];
     
-    C_array[3] = last.size();
-    for(int64_t i = 0; i < n_nodes; i++) if(T_bits[i]) last.push_back('T');
-
-    if(last.size() != n_nodes){
-        cerr << "BUG " << last.size() << " " << n_nodes << endl;
-        exit(1);
-    }
+    populate_first_column(buf1, C_array, A_bits, C_bits, G_bits, T_bits);
+    // buf1[i] = incoming character to node i
 
     // One byte per LCS value to get atomic writes and reads.
     // Values LCS[i] == k means the value is not yet set
@@ -59,6 +70,11 @@ sdsl::int_vector<> lcs_basic_parallel_algorithm(const sbwt::plain_matrix_sbwt_t&
 
     for(int64_t round = 0; round < k; round++){
         cerr << "Round " << round << "/" << k-1 << endl;
+
+        char* last = (round % 2 == 0) ? buf1 : buf2;
+        char* propagated = (round % 2 == 0) ? buf2 : buf1;
+
+        propagated[0] = '$'; // This node has no incoming edge so it's a special case
 
         #pragma omp parallel for num_threads(n_threads)
         for(int64_t t = 0; t < n_threads; t++){
@@ -72,23 +88,23 @@ sdsl::int_vector<> lcs_basic_parallel_algorithm(const sbwt::plain_matrix_sbwt_t&
         }
 
         // Propagate the labels one step forward in the graph
-        vector<char> propagated(n_nodes, '$');
 
         #pragma omp parallel for num_threads(n_threads)
         for(int64_t t = 0; t < n_threads; t++){
             int64_t start = n_nodes * t / n_threads;
             int64_t end = n_nodes * (t+1) / n_threads;
-            char* A_ptr = propagated.data() + C_array[0] + SBWT.get_subset_rank_structure().A_bits_rs(start);
-            char* C_ptr = propagated.data() + C_array[1] + SBWT.get_subset_rank_structure().C_bits_rs(start);
-            char* G_ptr = propagated.data() + C_array[2] + SBWT.get_subset_rank_structure().G_bits_rs(start);
-            char* T_ptr = propagated.data() + C_array[3] + SBWT.get_subset_rank_structure().T_bits_rs(start);
+            char* A_ptr = propagated + C_array[0] + SBWT.get_subset_rank_structure().A_bits_rs(start);
+            char* C_ptr = propagated + C_array[1] + SBWT.get_subset_rank_structure().C_bits_rs(start);
+            char* G_ptr = propagated + C_array[2] + SBWT.get_subset_rank_structure().G_bits_rs(start);
+            char* T_ptr = propagated + C_array[3] + SBWT.get_subset_rank_structure().T_bits_rs(start);
             char* ptrs[4] = {A_ptr, C_ptr, G_ptr, T_ptr};
             const sdsl::bit_vector* bits[4] = {&A_bits, &C_bits, &G_bits, &T_bits};
-            lcs_worker_thread(ptrs, last.data(), bits, start, end);
+            lcs_worker_thread(ptrs, last, bits, start, end);
         }
-
-        last = std::move(propagated);
     }
+
+    delete[] buf1;
+    delete[] buf2;
 
     // Compress to sdsl::int_vector
     sdsl::int_vector<> lcs(n_nodes, 0, 64 - __builtin_clzll(k-1)); // Enough bits per element to store values from 0 to k-1
