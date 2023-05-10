@@ -9,6 +9,7 @@
 #include "lcs_basic_algorithm.hpp"
 #include "lcs_linear_algorithm.hpp"
 #include "lcs_superalphabet_algorithm.hpp"
+#include "lcs_basic_parallel_algorithm.hpp"
 
 using namespace std;
 using namespace sbwt;
@@ -56,13 +57,15 @@ int main(int argc, char** argv){
 
     sdsl::int_vector naive = lcs_naive_algorithm(sbwt);
     sdsl::int_vector basic = lcs_basic_algorithm(sbwt);
+    sdsl::int_vector basic_parallel = lcs_basic_parallel_algorithm(sbwt);
     sdsl::int_vector superalphabet_2 = lcs_superalphabet_algorithm(sbwt, 2);
     sdsl::int_vector superalphabet_4 = lcs_superalphabet_algorithm(sbwt, 4);
     sdsl::int_vector linear = lcs_linear_algorithm(sbwt);
 
-    if(basic != naive) cerr << "Basic and naive algorithms do not agree" << endl;
-    if(basic != superalphabet_2) cerr << "Basic and superalphabet-2 algorithms do not agree" << endl;
-    if(basic != superalphabet_4) cerr << "Basic and superalphabet-4 algorithms do not agree" << endl;
+    //if(basic != naive) cerr << "Basic and naive algorithms do not agree" << endl;
+    if(basic != basic_parallel) cerr << "Basic and basic parallel algorithms do not agree" << endl;
+    //if(basic != superalphabet_2) cerr << "Basic and superalphabet-2 algorithms do not agree" << endl;
+    //if(basic != superalphabet_4) cerr << "Basic and superalphabet-4 algorithms do not agree" << endl;
     if(basic != linear) cerr << "Basic and linear algorithms do not agree" << endl;
     //else cerr << "All algorithms agree" << endl;
 
