@@ -25,9 +25,10 @@ sdsl::int_vector<> lcs_linear_algorithm(const sbwt::plain_matrix_sbwt_t& SBWT){
     lcs[0]=lcs[1]=0; // By definition
     vector<uint64_t> I = {n_nodes-1};
 
+    int64_t values_computed = 0;
     vector<uint64_t> _I = {0}; // $ interval
     for(int64_t i = 0; i < k; i++) {
-        cerr << "Round " << i << "/" << k-1 << ", intervals: " << I.size() << endl;
+        cerr << "Round " << i << "/" << k-1 << ", intervals: " << I.size() << ", progress: " << std::fixed << std::setprecision(2) << (double)values_computed / n_nodes * 100 << "%" << endl;
         while (!I.empty()){
             uint64_t r = I.back();
             I.pop_back();
@@ -37,6 +38,7 @@ sdsl::int_vector<> lcs_linear_algorithm(const sbwt::plain_matrix_sbwt_t& SBWT){
                 int64_t r_new = C[c] + DNA_rs[c]->rank(r + 1) -1;
                 if (r_new < n_nodes-1 && lcs[r_new+1] == k){
                     lcs[r_new+1] = i;
+                    values_computed++;
                     _I.push_back(r_new);
                 }
             }
