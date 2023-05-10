@@ -59,9 +59,15 @@ sdsl::int_vector<> lcs_basic_parallel_algorithm(const sbwt::plain_matrix_sbwt_t&
 
     for(int64_t round = 0; round < k; round++){
         cerr << "Round " << round << "/" << k-1 << endl;
-        for(int64_t i = 0; i < n_nodes; i++){
-            if(lcs_bytes[i] == k && (i == 0 || last[i] != last[i-1])){
-                lcs_bytes[i] = round;
+
+        #pragma omp parallel for num_threads(n_threads)
+        for(int64_t t = 0; t < n_threads; t++){
+            int64_t start = n_nodes * t / n_threads;
+            int64_t end = n_nodes * (t+1) / n_threads;
+            for(int64_t i = start; i < end; i++){
+                if(lcs_bytes[i] == k && (i == 0 || last[i] != last[i-1])){
+                    lcs_bytes[i] = round;
+                }
             }
         }
 
