@@ -22,7 +22,7 @@ sdsl::int_vector<> lcs_linear_algorithm(const sbwt::plain_matrix_sbwt_t& SBWT){
     const int sigma = C.size();
 
     sdsl::int_vector<> lcs(n_nodes, k, 64 - __builtin_clzll(k)); // Enough bits per element to store values from 0 to k
-    lcs[0]=lcs[1]=0;
+    lcs[0]=0; // By definition
     vector<pair<uint64_t, uint64_t>> I;
     I.push_back({0,n_nodes});
 
