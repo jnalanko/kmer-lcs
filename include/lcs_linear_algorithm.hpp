@@ -47,7 +47,7 @@ sdsl::int_vector<> lcs_linear_algorithm(const sbwt::plain_matrix_sbwt_t& SBWT){
                 }
             }
         }
-        I = _I;
+        I = std::move(_I);
         _I.clear();
     }
     return lcs;
