@@ -61,9 +61,9 @@ int main(int argc, char** argv){
     sdsl::int_vector linear = lcs_linear_algorithm(sbwt);
 
     if(basic != naive) cerr << "Basic and naive algorithms do not agree" << endl;
-    else if(basic != superalphabet_2) cerr << "Basic and superalphabet-2 algorithms do not agree" << endl;
-    else if(basic != superalphabet_4) cerr << "Basic and superalphabet-4 algorithms do not agree" << endl;
-    else if(basic != linear) cerr << "Basic and linear algorithms do not agree" << endl;
-    else cerr << "All algorithms agree" << endl;
+    if(basic != superalphabet_2) cerr << "Basic and superalphabet-2 algorithms do not agree" << endl;
+    if(basic != superalphabet_4) cerr << "Basic and superalphabet-4 algorithms do not agree" << endl;
+    if(basic != linear) cerr << "Basic and linear algorithms do not agree" << endl;
+    //else cerr << "All algorithms agree" << endl;
 
 }
