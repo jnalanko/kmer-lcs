@@ -6,13 +6,21 @@
 using namespace std;
 
 // End is one past end
-void lcs_worker_thread(char** output_starts, const char* input, const sdsl::bit_vector** bits, int64_t start, int64_t end){
+void lcs_propagate_thread(char** output_starts, const char* input, const sdsl::bit_vector** bits, int64_t start, int64_t end){
     for(int64_t i = start; i < end; i++){
         for(char sigma = 0; sigma < 4; sigma++){
             if((*(bits[sigma]))[i] == 1){
                 *(output_starts[sigma]) = input[i];
                 output_starts[sigma]++;
             }
+        }
+    }
+}
+
+void lcs_update_thread(uint8_t* lcs_bytes, const char* last, int64_t n_nodes, int64_t k, int64_t round, int64_t start, int64_t end){
+    for(int64_t i = start; i < end; i++){
+        if(lcs_bytes[i] == k && (i == 0 || last[i] != last[i-1])){
+            lcs_bytes[i] = round;
         }
     }
 }
@@ -80,11 +88,7 @@ sdsl::int_vector<> lcs_basic_parallel_algorithm(const sbwt::plain_matrix_sbwt_t&
         for(int64_t t = 0; t < n_threads; t++){
             int64_t start = n_nodes * t / n_threads;
             int64_t end = n_nodes * (t+1) / n_threads;
-            for(int64_t i = start; i < end; i++){
-                if(lcs_bytes[i] == k && (i == 0 || last[i] != last[i-1])){
-                    lcs_bytes[i] = round;
-                }
-            }
+            lcs_update_thread(lcs_bytes.data(), last, n_nodes, k, round, start, end);
         }
 
         // Propagate the labels one step forward in the graph
@@ -99,7 +103,7 @@ sdsl::int_vector<> lcs_basic_parallel_algorithm(const sbwt::plain_matrix_sbwt_t&
             char* T_ptr = propagated + C_array[3] + SBWT.get_subset_rank_structure().T_bits_rs(start);
             char* ptrs[4] = {A_ptr, C_ptr, G_ptr, T_ptr};
             const sdsl::bit_vector* bits[4] = {&A_bits, &C_bits, &G_bits, &T_bits};
-            lcs_worker_thread(ptrs, last, bits, start, end);
+            lcs_propagate_thread(ptrs, last, bits, start, end);
         }
     }
 
