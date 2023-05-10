@@ -45,9 +45,6 @@ sdsl::int_vector<> lcs_linear_algorithm(const sbwt::plain_matrix_sbwt_t& SBWT){
                     lcs[r+1] = i;
                     _I.push_back({ l, r });
                 }
-                else if (rank >= 0 && r == n_nodes -1){ // *T intervals
-                    _I.push_back({ l, r });
-                }
             }
         }
         I = _I;
