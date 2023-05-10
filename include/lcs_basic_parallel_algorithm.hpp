@@ -19,6 +19,11 @@ void lcs_worker_thread(char** output_starts, const char* input, const sdsl::bit_
 
 sdsl::int_vector<> lcs_basic_parallel_algorithm(const sbwt::plain_matrix_sbwt_t& SBWT, int64_t n_threads){
 
+    if(SBWT.get_k() > 255){
+        cerr << "Error: maximum k supported is 255" << endl;
+        // Because we are using 1 byte per LCS value
+    }
+
     const sdsl::bit_vector& A_bits = SBWT.get_subset_rank_structure().A_bits;
     const sdsl::bit_vector& C_bits = SBWT.get_subset_rank_structure().C_bits;
     const sdsl::bit_vector& G_bits = SBWT.get_subset_rank_structure().G_bits;
@@ -48,15 +53,15 @@ sdsl::int_vector<> lcs_basic_parallel_algorithm(const sbwt::plain_matrix_sbwt_t&
         exit(1);
     }
 
-    sdsl::bit_vector mismatch_found_marks(n_nodes, 0);
-    sdsl::int_vector<> lcs(n_nodes, 0, 64 - __builtin_clzll(k-1)); // Enough bits per element to store values from 0 to k-1
+    // One byte per LCS value to get atomic writes and reads.
+    // Values LCS[i] == k means the value is not yet set
+    vector<uint8_t> lcs_bytes(n_nodes, k);
 
     for(int64_t round = 0; round < k; round++){
         cerr << "Round " << round << "/" << k-1 << endl;
         for(int64_t i = 0; i < n_nodes; i++){
-            if(mismatch_found_marks[i] == 0 && (i == 0 || last[i] != last[i-1])){
-                mismatch_found_marks[i] = 1;
-                lcs[i] = round;
+            if(lcs_bytes[i] == k && (i == 0 || last[i] != last[i-1])){
+                lcs_bytes[i] = round;
             }
         }
 
@@ -78,6 +83,11 @@ sdsl::int_vector<> lcs_basic_parallel_algorithm(const sbwt::plain_matrix_sbwt_t&
 
         last = std::move(propagated);
     }
+
+    // Compress to sdsl::int_vector
+    sdsl::int_vector<> lcs(n_nodes, 0, 64 - __builtin_clzll(k-1)); // Enough bits per element to store values from 0 to k-1
+    for(int64_t i = 0; i < n_nodes; i++)
+        lcs[i] = lcs_bytes[i];
 
     return lcs;
 }
