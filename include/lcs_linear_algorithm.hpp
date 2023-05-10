@@ -3,7 +3,7 @@
 #include "sbwt/variants.hh"
 
 sdsl::int_vector<> lcs_linear_algorithm(const sbwt::plain_matrix_sbwt_t& SBWT){
-    const int64_t n_nodes = SBWT.number_of_subsets();
+    const uint64_t n_nodes = SBWT.number_of_subsets();
     const sdsl::bit_vector& A_bits = SBWT.get_subset_rank_structure().A_bits;
     const sdsl::bit_vector& C_bits = SBWT.get_subset_rank_structure().C_bits;
     const sdsl::bit_vector& G_bits = SBWT.get_subset_rank_structure().G_bits;
@@ -23,27 +23,21 @@ sdsl::int_vector<> lcs_linear_algorithm(const sbwt::plain_matrix_sbwt_t& SBWT){
 
     sdsl::int_vector<> lcs(n_nodes, k, 64 - __builtin_clzll(k)); // Enough bits per element to store values from 0 to k
     lcs[0]=lcs[1]=0; // By definition
-    vector<pair<uint64_t, uint64_t>> I;
-    I.push_back({0,n_nodes});
+    vector<uint64_t> I = {n_nodes-1};
 
-    vector<pair<uint64_t, uint64_t>> _I = {{0,0}}; // $ interval
+    vector<uint64_t> _I = {0}; // $ interval
     for(int64_t i = 0; i < k; i++) {
         cerr << "Round " << i << "/" << k-1 << ", intervals: " << I.size() << endl;
         while (!I.empty()){
-            pair<uint64_t, uint64_t> l_r = I.back();
+            uint64_t r = I.back();
             I.pop_back();
             // Enumerate Right
             for (int c = 0; c < sigma; c++){
-                const sdsl::bit_vector& Bit_v = *(DNA_bitvectors[c]);
-                const sdsl::rank_support_v5<>& Bit_rs = *(DNA_rs[c]);
                 // Extend right
-                // if rank < 0 no possible extension
-                int64_t l = C[c] + Bit_rs.rank(l_r.first);
-                int64_t r = C[c] + Bit_rs.rank(l_r.second + 1) -1;
-                int64_t rank = r - l ;
-                if (rank >= 0 && r < n_nodes-1 && lcs[r+1] == k){
-                    lcs[r+1] = i;
-                    _I.push_back({ l, r });
+                int64_t r_new = C[c] + DNA_rs[c]->rank(r + 1) -1;
+                if (r_new < n_nodes-1 && lcs[r_new+1] == k){
+                    lcs[r_new+1] = i;
+                    _I.push_back(r_new);
                 }
             }
         }
