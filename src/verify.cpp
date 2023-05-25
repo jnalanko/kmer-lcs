@@ -14,6 +14,17 @@
 using namespace std;
 using namespace sbwt;
 
+// This compares all values in two vectors for equality.
+// This is less strict than the equality operator, which also checks internal variables like bit width.
+bool vectors_have_same_values(const sdsl::int_vector<>& v1, const sdsl::int_vector<>& v2){
+    if(v1.size() != v2.size()) return false;
+
+    for(int64_t i = 0; i < v1.size(); i++){
+        if(v1[i] != v2[i]) return false;
+    }
+
+    return true;
+}
 
 int64_t get_microseconds(){
     // Get the current time in microseconds
@@ -62,11 +73,12 @@ int main(int argc, char** argv){
     sdsl::int_vector superalphabet_4 = lcs_superalphabet_algorithm(sbwt, 4);
     sdsl::int_vector linear = lcs_linear_algorithm(sbwt);
 
-    //if(basic != naive) cerr << "Basic and naive algorithms do not agree" << endl;
-    if(basic != basic_parallel) cerr << "Basic and basic parallel algorithms do not agree" << endl;
-    //if(basic != superalphabet_2) cerr << "Basic and superalphabet-2 algorithms do not agree" << endl;
-    //if(basic != superalphabet_4) cerr << "Basic and superalphabet-4 algorithms do not agree" << endl;
-    if(basic != linear) cerr << "Basic and linear algorithms do not agree" << endl;
+    //if(!vectors_have_same_values(basic, naive))cerr << "Basic and naive algorithms do not agree" << endl;
+    if(!vectors_have_same_values(basic, basic_parallel)) cerr << "Basic and basic parallel algorithms do not agree" << endl;
+    if(!vectors_have_same_values(basic, superalphabet_2)) cerr << "Basic and superalphabet-2 algorithms do not agree" << endl;
+    //if(!vectors_have_same_values(basic, superalphabet_4)) cerr << "Basic and superalphabet-4 algorithms do not agree" << endl;
+    if(!vectors_have_same_values(basic, linear)) cerr << "Basic and linear algorithms do not agree" << endl;
+    
     //else cerr << "All algorithms agree" << endl;
 
 }
