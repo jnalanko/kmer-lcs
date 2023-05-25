@@ -11,7 +11,7 @@ int64_t get_char_idx(char c){
         case 'C': return 2;
         case 'G': return 3;
         case 'T': return 4;
-            //default: return -1;
+        default: return 0;
     }
 }
 
@@ -28,7 +28,7 @@ char get_key_from_char(char c1, char c2){
     return k;
 }
 
-char get_keyab_from_key(char key, vector<char> alphabet){
+char get_keyab_from_key(char key, const vector<char>& alphabet){
     auto it = std::find(alphabet.begin(), alphabet.end(), key);
     if (it != alphabet.end()) {
         return it - alphabet.begin();
@@ -36,12 +36,12 @@ char get_keyab_from_key(char key, vector<char> alphabet){
     return  - 1;
 }
 
-char get_keyab_from_char(char c1, char c2, vector<char> alphabet){
+char get_keyab_from_char(char c1, char c2, const vector<char>& alphabet){
     int k = c2 * 5 - (4 - c1);
     return get_keyab_from_key(k, alphabet);
 }
 
-char get_key_from_keyab(char keyab, vector<char> alphabet){
+char get_key_from_keyab(char keyab, const vector<char>& alphabet){
     char key = alphabet[keyab];
     return key;
 }
@@ -51,11 +51,28 @@ struct concat_str{
     sdsl::bit_vector concat_b;
 };
 
-concat_str get_super_concat(char base, vector<char>& concat_vector, sdsl::bit_vector& concat_bits, vector<int64_t> C_array, vector<char> super_alphabet, vector<char> alphabet){
+concat_str get_super_concat(char base, const vector<char>& concat_vector, const sdsl::bit_vector& concat_bits, const vector<int64_t>& C_array, const vector<char>& super_alphabet, const vector<char>& alphabet){
     concat_str result;
     vector<char> res_concat_v;
     vector<bool> bv;
     sdsl::bit_vector::select_1_type select_concat_bits(&concat_bits);
+
+    // Todo remove select
+    // Scan concat_bv once and add a pointer for every element in the alphabet
+    vector<int64_t> select_v = {0};
+    int64_t i=1, subset_counter = 0; // In the first pos there is a 1 = {} = $$...
+    for (int64_t k = 0; k < C_array.size(); k++){
+        while (i < concat_bits.size()){
+            if (concat_bits[i]){ subset_counter++;}
+            if(subset_counter == C_array[k] ){
+                select_v.push_back(i);
+                i++;
+                break;
+            }
+            i++;
+        }
+    }
+
     vector<int64_t> C_copy = {0};
     C_copy.insert(C_copy.end(), C_array.begin(), C_array.end());
     int64_t subsets = 0;
@@ -75,7 +92,7 @@ concat_str get_super_concat(char base, vector<char>& concat_vector, sdsl::bit_ve
 
         // Start of the subset of curr_char
         // INDEX IN BITVECTOR
-        int64_t x_subset_start_bv = select_concat_bits(x_subset) + 1; // later +1 as we want zeros
+        int64_t x_subset_start_bv = select_v[curr_char] + 1; // later +1 as we want zeros
         // INDEX CONCAT VECTOR
         int64_t x_subset_start_v = x_subset_start_bv - x_subset;//rank 0
         // Scan the subset and add each character found to curr_char
@@ -86,6 +103,7 @@ concat_str get_super_concat(char base, vector<char>& concat_vector, sdsl::bit_ve
             x_subset_start_bv ++;
             x_subset_start_v ++;
         }
+        select_v[curr_char]=x_subset_start_bv;
 
         // add necessary 0s to the bitvector
         while(bv.size() < (res_concat_v.size() + subsets)) {bv.push_back(0);}
@@ -199,7 +217,7 @@ sdsl::int_vector<> lcs_superalphabet_algorithm(const sbwt::plain_matrix_sbwt_t& 
     // Dump k-mers with 2-super_alphabet
     // Propagate the labels one step forward in the graph
 
-    for(int64_t round = 2; round < k; round+=2){
+    for(int64_t round = chars_per_super_alpha_char; round < k; round+=chars_per_super_alpha_char){ // works w chars_per_super_alpha_char = 2
         // Propagate the labels one step forward in the graph
         vector<int64_t> super_C_copy = {0};
         super_C_copy.insert(super_C_copy.end(), super_C_array.begin(), super_C_array.end());
@@ -224,11 +242,11 @@ sdsl::int_vector<> lcs_superalphabet_algorithm(const sbwt::plain_matrix_sbwt_t& 
                 char compare_res = pi ^ pi_;
                 if (compare_res != 0){
                     mismatch_found_marks[j] = 1;
-                    // LAST 3 BITS
-                    compare_res = compare_res & 0x07; // check only c2
-                    if ( compare_res == 0){ // no mismatch in c2 -> mismatch in c1
+                    // Check only c2 (last 3 bits)
+                    compare_res = compare_res & 0x07;
+                    if ( compare_res == 0){ // No mismatch in c2 -> mismatch in c1
                         lcs[j] = round + 1;
-                    } else { // mismatch also in c2
+                    } else { // Mismatch in c2
                         lcs[j] = round;
                     }
                 }
