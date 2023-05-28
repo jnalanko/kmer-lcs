@@ -61,9 +61,14 @@ def plot_human(linear_infile, basic_infile, dataset_name, outfile_prefix):
                     "Memory ({})".format(dataset_name), 
                     "{}_mem_by_k.pdf".format(outfile_prefix))
     
+    do_scatter_plot(linear_time, linear_mem, basic_time, basic_mem, 
+                    "Linear", "Basic", "Time (s)", "Memory (GB)", 
+                    "Time and space ({})".format(dataset_name), 
+                    "{}_time_mem_tradeoff.pdf".format(outfile_prefix))
+    
 if not os.path.exists("plots"):
    os.makedirs("plots")
 
-plot_human("data_for_plots/linear_human.txt", "data_for_plots/basic_human.txt", "Human genome", "plots/human")
-plot_human("data_for_plots/linear_coli.txt", "data_for_plots/basic_coli.txt", "E. coli genomes", "plots/coli")
-plot_human("data_for_plots/linear_metagenome.txt", "data_for_plots/basic_metagenome.txt", "Metagenome reads", "plots/metagenome")
+plot_human("data_for_plots/linear_human.csv", "data_for_plots/basic_human.csv", "Human genome", "plots/human")
+plot_human("data_for_plots/linear_coli.csv", "data_for_plots/basic_coli.csv", "E. coli genomes", "plots/coli")
+plot_human("data_for_plots/linear_metagenome.csv", "data_for_plots/basic_metagenome.csv", "Metagenome reads", "plots/metagenome")
