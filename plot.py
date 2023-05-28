@@ -26,11 +26,6 @@ def do_scatter_plot(X1, Y1, X2, Y2, label1, label2, xlabel, ylabel, title, filen
     plt.xlim(xmin=0)
     plt.ylim(ymin=0)
 
-    # Annotate points
-    #for i in range(len(linear_n)):
-    #    plt.annotate(linear_k[i], (linear_n[i] - 2e7, 0), color="red")
-    #plt.annotate("k =", (1e7, 0), color="red")
-
     plt.legend()
     plt.title(title)
 
