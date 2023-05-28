@@ -16,5 +16,7 @@ plt.plot(threads, speedups)
 
 # Plot dashed line at y = x
 plt.plot(threads, threads, linestyle='--', color='black')
+plt.xlabel("Threads")
+plt.ylabel("Speedup")
 
 plt.show()
