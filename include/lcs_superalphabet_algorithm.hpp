@@ -183,7 +183,6 @@ sdsl::int_vector<> lcs_superalphabet_algorithm(const sbwt::plain_matrix_sbwt_t& 
         concat_b[i] = bv[i];
     }
 
-
     vector<uint64_t> alphabet = {0,1,2,3,4};//$,A,C,G,T
 
     // Create a super alphabet
