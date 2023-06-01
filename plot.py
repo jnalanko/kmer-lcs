@@ -43,7 +43,7 @@ def plot_runs(linear_infile, basic_infile, superalphabet_2_infile, dataset_name,
                     "Time ({})".format(dataset_name), 
                     "{}_time_by_n.pdf".format(outfile_prefix))
     
-    do_scatter_plot(linear_n, linear_mem, basic_n, basic_mem, sa2_n, sa2_time,
+    do_scatter_plot(linear_n, linear_mem, basic_n, basic_mem, sa2_n, sa2_mem,
                     "Linear", "Basic", "SA-2", "SBWT columns", "Memory (GB)", 
                     "Memory ({})".format(dataset_name), 
                     "{}_mem_by_n.pdf".format(outfile_prefix))
@@ -53,7 +53,7 @@ def plot_runs(linear_infile, basic_infile, superalphabet_2_infile, dataset_name,
                     "Time ({})".format(dataset_name), 
                     "{}_time_by_k.pdf".format(outfile_prefix))
     
-    do_scatter_plot(linear_k, linear_mem, basic_k, basic_mem, sa2_k, sa2_time,
+    do_scatter_plot(linear_k, linear_mem, basic_k, basic_mem, sa2_k, sa2_mem,
                     "Linear", "Basic", "SA-2", "k", "Memory (GB)", 
                     "Memory ({})".format(dataset_name), 
                     "{}_mem_by_k.pdf".format(outfile_prefix))
