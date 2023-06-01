@@ -17,9 +17,9 @@ def parse(filename):
 
 def do_scatter_plot(X1, Y1, X2, Y2, X3, Y3, label1, label2, label3, xlabel, ylabel, title, filename):
     plt.figure()
-    plt.scatter(X1, Y1, marker='x', label = label1)
-    plt.scatter(X2, Y2, marker='x', label = label2)
-    plt.scatter(X3, Y3, marker='x', label = label3)
+    plt.scatter(X1, Y1, marker='x', label = label1, color = 'r')
+    plt.scatter(X2, Y2, marker='o', facecolors='none', edgecolors='g', label = label2)
+    plt.scatter(X3, Y3, marker='s', facecolors='none', edgecolors='b', label = label3)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
 
@@ -48,17 +48,17 @@ def plot_runs(linear_infile, basic_infile, superalphabet_2_infile, dataset_name,
                     "Memory ({})".format(dataset_name), 
                     "{}_mem_by_n.pdf".format(outfile_prefix))
 
-    do_scatter_plot(linear_k, linear_time, basic_k, basic_time, sa2_n, sa2_time,
+    do_scatter_plot(linear_k, linear_time, basic_k, basic_time, sa2_k, sa2_time,
                     "Linear", "Basic", "SA-2", "k", "Time (s)", 
                     "Time ({})".format(dataset_name), 
                     "{}_time_by_k.pdf".format(outfile_prefix))
     
-    do_scatter_plot(linear_k, linear_mem, basic_k, basic_mem, sa2_n, sa2_time,
+    do_scatter_plot(linear_k, linear_mem, basic_k, basic_mem, sa2_k, sa2_time,
                     "Linear", "Basic", "SA-2", "k", "Memory (GB)", 
                     "Memory ({})".format(dataset_name), 
                     "{}_mem_by_k.pdf".format(outfile_prefix))
     
-    do_scatter_plot(basic_time, basic_mem, linear_time, linear_mem, sa2_n, sa2_time,
+    do_scatter_plot(basic_mem, basic_time, linear_mem, linear_time, sa2_mem, sa2_time,
                     "Linear", "Basic", "SA-2", "Memory (GB)", "Time (s)", 
                     "Space and time ({})".format(dataset_name), 
                     "{}_mem_time_tradeoff.pdf".format(outfile_prefix))
