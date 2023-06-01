@@ -15,10 +15,11 @@ def parse(filename):
         N.append(int(tokens[4]))
     return N, TIME, MEM, K
 
-def do_scatter_plot(X1, Y1, X2, Y2, label1, label2, xlabel, ylabel, title, filename):
+def do_scatter_plot(X1, Y1, X2, Y2, X3, Y3, label1, label2, label3, xlabel, ylabel, title, filename):
     plt.figure()
     plt.scatter(X1, Y1, marker='x', label = label1)
     plt.scatter(X2, Y2, marker='x', label = label2)
+    plt.scatter(X3, Y3, marker='x', label = label3)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
 
@@ -32,32 +33,33 @@ def do_scatter_plot(X1, Y1, X2, Y2, label1, label2, xlabel, ylabel, title, filen
     print("Saving to", filename)
     plt.savefig(filename)
 
-def plot_human(linear_infile, basic_infile, dataset_name, outfile_prefix):
+def plot_runs(linear_infile, basic_infile, superalphabet_2_infile, dataset_name, outfile_prefix):
     linear_n, linear_time, linear_mem, linear_k = parse(linear_infile)
     basic_n, basic_time, basic_mem, basic_k = parse(basic_infile)
+    sa2_n, sa2_time, sa2_mem, sa2_k = parse(superalphabet_2_infile)
 
-    do_scatter_plot(linear_n, linear_time, basic_n, basic_time, 
-                    "Linear", "Basic", "SBWT columns", "Time (s)", 
+    do_scatter_plot(linear_n, linear_time, basic_n, basic_time, sa2_n, sa2_time,
+                    "Linear", "Basic", "SA-2", "SBWT columns", "Time (s)", 
                     "Time ({})".format(dataset_name), 
                     "{}_time_by_n.pdf".format(outfile_prefix))
     
-    do_scatter_plot(linear_n, linear_mem, basic_n, basic_mem, 
-                    "Linear", "Basic", "SBWT columns", "Memory (GB)", 
+    do_scatter_plot(linear_n, linear_mem, basic_n, basic_mem, sa2_n, sa2_time,
+                    "Linear", "Basic", "SA-2", "SBWT columns", "Memory (GB)", 
                     "Memory ({})".format(dataset_name), 
                     "{}_mem_by_n.pdf".format(outfile_prefix))
 
-    do_scatter_plot(linear_k, linear_time, basic_k, basic_time, 
-                    "Linear", "Basic", "k", "Time (s)", 
+    do_scatter_plot(linear_k, linear_time, basic_k, basic_time, sa2_n, sa2_time,
+                    "Linear", "Basic", "SA-2", "k", "Time (s)", 
                     "Time ({})".format(dataset_name), 
                     "{}_time_by_k.pdf".format(outfile_prefix))
     
-    do_scatter_plot(linear_k, linear_mem, basic_k, basic_mem, 
-                    "Linear", "Basic", "k", "Memory (GB)", 
+    do_scatter_plot(linear_k, linear_mem, basic_k, basic_mem, sa2_n, sa2_time,
+                    "Linear", "Basic", "SA-2", "k", "Memory (GB)", 
                     "Memory ({})".format(dataset_name), 
                     "{}_mem_by_k.pdf".format(outfile_prefix))
     
-    do_scatter_plot(basic_time, basic_mem, linear_time, linear_mem, 
-                    "Linear", "Basic", "Memory (GB)", "Time (s)", 
+    do_scatter_plot(basic_time, basic_mem, linear_time, linear_mem, sa2_n, sa2_time,
+                    "Linear", "Basic", "SA-2", "Memory (GB)", "Time (s)", 
                     "Space and time ({})".format(dataset_name), 
                     "{}_mem_time_tradeoff.pdf".format(outfile_prefix))
 
@@ -100,6 +102,6 @@ if not os.path.exists("plots"):
    os.makedirs("plots")
 
 make_kmer_plot("data_for_plots/linear_human.csv", "data_for_plots/linear_coli.csv", "data_for_plots/linear_metagenome.csv", "plots/kmers.pdf")
-plot_human("data_for_plots/linear_human.csv", "data_for_plots/basic_human.csv", "Human genome", "plots/human")
-plot_human("data_for_plots/linear_coli.csv", "data_for_plots/basic_coli.csv", "E. coli genomes", "plots/coli")
-plot_human("data_for_plots/linear_metagenome.csv", "data_for_plots/basic_metagenome.csv", "Metagenome reads", "plots/metagenome")
+plot_runs("data_for_plots/linear_human.csv", "data_for_plots/basic_human.csv", "data_for_plots/superalphabet-2_human.csv", "Human genome", "plots/human")
+plot_runs("data_for_plots/linear_coli.csv", "data_for_plots/basic_coli.csv", "data_for_plots/superalphabet-2_coli.csv", "E. coli genomes", "plots/coli")
+plot_runs("data_for_plots/linear_metagenome.csv", "data_for_plots/basic_metagenome.csv", "data_for_plots/superalphabet-2_metagenome.csv", "Metagenome reads", "plots/metagenome")
