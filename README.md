@@ -1,5 +1,5 @@
 # LCP for Succinct k-Spectra
-This is the code for the paper [Longest Common Prefix Arrays for Succinct k-Spectra](https://arxiv.org/abs/2306.04850) by J. N. Alanko, E. Biagi,  S. J. Puglisi, SPIRE 2023. 
+This is the code for the paper [Longest Common Prefix Arrays for Succinct k-Spectra](https://link.springer.com/chapter/10.1007/978-3-031-43980-3_1) by J. N. Alanko, E. Biagi,  S. J. Puglisi, SPIRE 2023. 
 
 # Building
 
