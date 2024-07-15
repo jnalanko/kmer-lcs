@@ -27,7 +27,14 @@ The code takes a plain-matrix sbwt file as input. You can generate one by runnin
 Then, you can run the benchmark with:
 
 ```
-./benchmark index.sbwt linear out.txt
+./benchmark index.sbwt <variant> out.txt
 ```
 
-where linear is one of: naive, basic, superalphabet-2, superalphabet-4, linear.
+The possible variants are: naive, basic, superalphabet-2, superalphabet-4, linear, basic-parallel-(#threads).
+
+By adding a fourth argument it is possible to save the lcs to a file. The following command saves the LCP to the file index-lcp.sdsl
+
+```
+./benchmark index.sbwt <variant> out.txt index-lcp
+```
+
