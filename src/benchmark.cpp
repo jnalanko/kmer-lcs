@@ -12,6 +12,9 @@
 #include "lcs_linear_algorithm.hpp"
 #include "lcs_superalphabet_algorithm.hpp"
 
+#include "SeqIO.hh"
+
+
 using namespace std;
 using namespace sbwt;
 
@@ -51,6 +54,7 @@ int main(int argc, char** argv){
     string sbwt_index_file = string(argv[1]);
     string algorithm = string(argv[2]);
     string outfile = string(argv[3]);
+    
 
     sbwt::throwing_ifstream in(sbwt_index_file, ios::binary);
     sbwt::throwing_ofstream out(outfile, ios::app); // Append mode
@@ -64,27 +68,35 @@ int main(int argc, char** argv){
     sbwt.load(in.stream);
     cerr << "Loaded a plain matrix SBWT with " << sbwt.number_of_subsets() << " subsets" << endl;
 
+    sdsl::int_vector<> LCS;
+
     if(algorithm == "naive"){
-        run_with_timing(sbwt, lcs_naive_algorithm, "Naive", out.stream);
+        LCS = run_with_timing(sbwt, lcs_naive_algorithm, "Naive", out.stream);
     } else if(algorithm == "basic"){
-        run_with_timing(sbwt, lcs_basic_algorithm, "Basic", out.stream);
+        LCS = run_with_timing(sbwt, lcs_basic_algorithm, "Basic", out.stream);
     } else if(algorithm.substr(0, 15) == "basic-parallel-"){
         int64_t num_threads = stoll(algorithm.substr(15));
         auto basic_parallel_algorithm = [num_threads](const sbwt::plain_matrix_sbwt_t& sbwt){
             return lcs_basic_parallel_algorithm(sbwt, num_threads);
         };
-        run_with_timing(sbwt, basic_parallel_algorithm, "Basic-Parallel-" + to_string(num_threads), out.stream);
+        LCS = run_with_timing(sbwt, basic_parallel_algorithm, "Basic-Parallel-" + to_string(num_threads), out.stream);
         
+
     } else if(algorithm == "linear"){
-        run_with_timing(sbwt, lcs_linear_algorithm, "Linear", out.stream);
+        LCS = run_with_timing(sbwt, lcs_linear_algorithm, "Linear", out.stream);
     } else if(algorithm.substr(0, 14) == "superalphabet-"){
         int64_t superalphabet_size = stoll(algorithm.substr(14));
         auto superalphabet_algorithm = [superalphabet_size](const sbwt::plain_matrix_sbwt_t& sbwt){
             return lcs_superalphabet_algorithm(sbwt, superalphabet_size);
         };
-        run_with_timing(sbwt, superalphabet_algorithm, "Superalphabet-" + to_string(superalphabet_size), out.stream);
+        LCS = run_with_timing(sbwt, superalphabet_algorithm, "Superalphabet-" + to_string(superalphabet_size), out.stream);
     } else {
         cerr << "Error: unknown algorithm " << algorithm << endl;
         return 1;
+    }
+    if (argc == 5){
+        string lcs_outfile = string(argv[4]);
+        std::ofstream LCS_out(lcs_outfile + ".sdsl");
+        sdsl::serialize(LCS, LCS_out);
     }
 }
