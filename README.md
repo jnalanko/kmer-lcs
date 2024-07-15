@@ -32,9 +32,9 @@ Then, you can run the benchmark with:
 
 The possible variants are: naive, basic, superalphabet-2, superalphabet-4, linear, basic-parallel-(#threads).
 
-By adding a fourth argument it is possible to save the lcs to a file. The following command saves the LCP to the file index-lcp.sdsl
+By adding a fourth argument it is possible to save the LCS to a file. The following command saves the LCS to the file index-lcs.sdsl
 
 ```
-./benchmark index.sbwt <variant> out.txt index-lcp
+./benchmark index.sbwt <variant> out.txt index-lcs
 ```
 
